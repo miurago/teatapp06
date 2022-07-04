@@ -255,10 +255,13 @@ def main():
             clf, train_pred, train_scores = ml_dtree(train_X, train_Y, 2)
 
             # 正解率を出力
-            ml_dtree(train_X, train_Y, 2)
-            #, train_pred, train_scores
+            st.caption('決定木の予測')
+            st.subheader(f"正解率：{train_scores}")
 
             # 決定木のツリーを出力
+            st.caption('')
+            st.caption('決定木の可視化')
+            st_display_dtree(train_pred)
             
 
         else:
