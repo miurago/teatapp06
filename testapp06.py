@@ -261,7 +261,7 @@ def main():
             # 決定木のツリーを出力
             st.caption('')
             st.caption('決定木の可視化')
-            # st_display_dtree(train_pred)
+            st_display_dtree(clf, train_X)
             
 
         else:
