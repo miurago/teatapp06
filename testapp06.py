@@ -225,7 +225,7 @@ def main():
 
 
     if choice == 'グラフ表示':
-        activities = ["退職","年齢"]
+        activities = ["退職","年齢","出張頻度","通勤距離","最終学歴","社員番号","職場環境の満足度","労働意欲","査定ランク","仕事への満足度","月給(ドル)","転職回数","昇給率","能力評価","人間関係の満足度","ストックオプション","社会人歴","昨年の研修時間","ワークライフバランス","在職年数","現在の役職年数","昇進からの経過年数","現在の上司になってからの年数","残業_有","性別_男性","配偶者_離婚","配偶者_結婚","配偶者_独身","部署_人事","部署_研究開発","部署_営業","専攻_経営","専攻_科学","専攻_医学","専攻_工学","専攻_人事","専攻_その他","役職_経営層","役職_管理職","役職_主任","役職_一般"]
         choice = st.sidebar.selectbox("グラフのx軸", activities)
         # セッションステートにデータフレームがあるかを確認
         if 'df' in st.session_state:
@@ -234,13 +234,16 @@ def main():
             df = copy.deepcopy(st.session_state.df)
             #st_display_table
             # グラフの表示
-            st_display_graph(df,activities[0])
+            st_display_graph(df,choice)
             
         else:
             st.subheader('訓練用データをアップロードしてください')
 
 
     if choice == '学習と検証':
+        activities = ["決定木","ランダムフォレスト","LightBGM","XGBoost","ニューラルネットワーク\n(ディープラーニング)"]
+        choice1 = st.sidebar.selectbox("学習の手法", activities)
+        choice2 = st.sidebar.number_input("決定木の深さ(サーバーの負担軽減の為 Max=3)",1,max_value=3)
 
         if 'df' in st.session_state:
 
@@ -250,18 +253,31 @@ def main():
             # 説明変数と目的変数の設定
             train_X = df.drop("退職", axis=1)   # 退職列以外を説明変数にセット
             train_Y = df["退職"]                # 退職列を目的変数にセット
+            if "決定木" in choice1:
+                # 決定木による予測
+                clf, train_pred, train_scores = ml_dtree(train_X, train_Y, choice2)
 
-            # 決定木による予測
-            clf, train_pred, train_scores = ml_dtree(train_X, train_Y, 2)
+                # 正解率を出力
+                st.caption('決定木の予測')
+                st.subheader(f'正解率：{train_scores}')
 
-            # 正解率を出力
-            st.caption('決定木の予測')
-            st.subheader(f"正解率：{train_scores}")
+                # 決定木のツリーを出力
+                st.caption('')
+                st.caption('決定木の可視化')
+                st_display_dtree(clf,train_Y)
 
-            # 決定木のツリーを出力
-            st.caption('')
-            st.caption('決定木の可視化')
-            st_display_dtree(clf, pd.DataFrame)
+            elif "ランダムフォレスト" in choice1:
+                clf = RandomForestClassifier(max_depth=2, random_state=1)
+                clf.fit(train_X, train_Y)
+
+
+
+            st.subheader('訓練用データでの予測精度')
+            st.caption('AIの予測が「全員、退職しないに偏った場合は（意味がないので）全ての精度は0で表示')
+
+            st.subheader('検証用データでの予測精度')
+            #activities = [clf]
+
             
 
         else:
@@ -278,4 +294,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
